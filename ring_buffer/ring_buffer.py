@@ -110,7 +110,7 @@ class LinkedList(SinglyLinkedList):
 
 
 
-class RingBufferArray:
+class RingBuffer:
     def __init__(self, capacity):
         self.capacity = capacity
         self.storage = []
@@ -118,25 +118,30 @@ class RingBufferArray:
 
 
     def append(self, item):
-        if item != None and self.capacity > 0:
-            if len(self.storage) == self.capacity:
-                new_last = self.get_next()
-                self.storage[new_last] = item
-                self.last = new_last
-                # self.next = self.get_next(self.next, self.capacity-1)
-                # self.next = (self.next + 1) % (self.capacity)
-            else:
-                self.storage.append(item)
-                # self.next = len(self.storage-1)
+        if self.capacity == 0:
+            raise Exception("Cannot add to a buffer with 0 capacity")
+        elif item == None:
+            # pass
+            raise Exception("Buffer value cannot be None")
+
+        # case when there is still growth capacity in buffer
+        # we keep expanding the storage
+        if self.capacity > len(self.storage):
+            self.storage.append(item)
+            self.last = len(self.storage) - 1
+        # max capacity has been reached; start overwriting
+        else:
+            # calculate the next index based on the current index
+            next_idx = (self.last + 1) % self.capacity
+            self.storage[next_idx] = item
+            self.last = next_idx
+
 
     def get(self):
         return self.storage
 
-    def get_next(self):
-        return (int(self.last)+1) % self.capacity
 
-
-class RingBuffer:
+class RingBufferLL:
     def __init__(self, capacity):
         self.capacity = capacity
         self.storage = SinglyLinkedList()
@@ -144,7 +149,7 @@ class RingBuffer:
 
     def append(self, item):
         if self.capacity == 0:
-            pass
+            raise Exception("Cannot add to a buffer with 0 capacity")
         elif self.capacity > len(self.storage):
             self.storage.append(item)
             self.current = self.storage.tail
@@ -160,19 +165,21 @@ class RingBuffer:
         node = self.storage.head
         result = []
         while node:
-            result.append(node._value)
-            node = node._next
+            if node.get_value():
+                result.append(node._value)
+            node = node.get_next()
         return result
 
 
-import random
-def test():
-    buffer = RingBuffer(5)
-    arr = ['a', 'b', 'c', 'd', 'd']
-    for i in range(10):
-        choice = random.randint(0, 4)
-        print("adding: ", arr[choice])
-        buffer.append(arr[choice])
-        print(buffer.get())
 
-test()
+# import random
+# def test():
+#     buffer = RingBuffer(5)
+#     arr = ['a', 'b', 'c', 'd', 'd']
+#     for i in range(10):
+#         choice = random.randint(0, 4)
+#         print("adding: ", arr[choice])
+#         buffer.append(arr[choice])
+#         print(buffer.get())
+
+# test()
